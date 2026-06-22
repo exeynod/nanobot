@@ -157,6 +157,10 @@ class AgentDefaults(Base):
         default=120,
         ge=0,
     )  # Max messages to replay from session history (0 = use default 120, respects token budget)
+    max_response_chars: int = Field(
+        default=0,
+        ge=0,
+    )  # Hard cap on final response length in chars (0 = disabled); truncates over-long replies at a word/sentence boundary
     consolidation_ratio: float = Field(
         default=0.5,
         ge=0.1,

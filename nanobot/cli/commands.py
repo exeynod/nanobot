@@ -737,6 +737,7 @@ def _run_gateway(
     from nanobot.cron.types import CronJob
     from nanobot.providers.factory import build_provider_snapshot, load_provider_snapshot
     from nanobot.providers.image_generation import image_gen_provider_configs
+    from nanobot.agent.response_length_hook import ResponseLengthHook
     from nanobot.session.manager import SessionManager
     from nanobot.session.webui_turns import WebuiTurnCoordinator
     from nanobot.webui.token_usage import TokenUsageHook
@@ -762,6 +763,13 @@ def _run_gateway(
     cron_store_path = config.workspace_path / "cron" / "jobs.json"
     cron = CronService(cron_store_path)
 
+    # Opt-in hard backstop on response length (0 = disabled, no hook registered).
+    gateway_hooks = [TokenUsageHook(timezone_name=config.agents.defaults.timezone)]
+    if config.agents.defaults.max_response_chars > 0:
+        gateway_hooks.append(
+            ResponseLengthHook(max_chars=config.agents.defaults.max_response_chars)
+        )
+
     # Create agent with cron service
     agent = AgentLoop.from_config(
         config, bus,
@@ -774,7 +782,7 @@ def _run_gateway(
         provider_snapshot_loader=load_provider_snapshot,
         runtime_events=runtime_events,
         provider_signature=provider_snapshot.signature,
-        hooks=[TokenUsageHook(timezone_name=config.agents.defaults.timezone)],
+        hooks=gateway_hooks,
     )
     WebuiTurnCoordinator(
         bus=bus,
