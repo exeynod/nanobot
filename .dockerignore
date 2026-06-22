@@ -12,3 +12,5 @@ nanobot/web/dist/
 node_modules/
 bridge/dist/
 workspace/
+.venv/
+.nanobot/
