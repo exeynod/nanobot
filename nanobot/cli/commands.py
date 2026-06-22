@@ -727,6 +727,7 @@ def _run_gateway(
 ) -> None:
     """Shared gateway runtime; ``open_browser_url`` opens a tab once channels are up."""
     from nanobot.agent.tools.message import MessageTool
+    from nanobot.automations.script import ScriptAutomationService
     from nanobot.bus.queue import MessageBus
     from nanobot.bus.runtime_events import RuntimeEventBus
     from nanobot.channels.manager import ChannelManager
@@ -982,6 +983,11 @@ def _run_gateway(
         webui_runtime_surface=webui_runtime_surface,
         webui_runtime_capabilities=webui_runtime_capabilities,
     )
+    automations = ScriptAutomationService(
+        config.automations,
+        workspace_path=config.workspace_path,
+        bus=bus,
+    )
 
     def _pick_heartbeat_target() -> tuple[str, str]:
         """Pick a routable channel/chat target for heartbeat-triggered messages."""
@@ -1011,6 +1017,11 @@ def _run_gateway(
         console.print(f"[green]✓[/green] Heartbeat: every {hb_cfg.interval_s}s")
     else:
         console.print("[yellow]✗[/yellow] Heartbeat: disabled")
+    if automations.enabled:
+        console.print(
+            f"[green]✓[/green] Automations: {len(config.automations.jobs)} "
+            f"configured, every {config.automations.interval_s:g}s"
+        )
 
     async def _health_server(host: str, health_port: int):
         """Lightweight HTTP health endpoint on the gateway port."""
@@ -1111,6 +1122,8 @@ def _run_gateway(
                 agent.run(),
                 channels.start_all(),
             ]
+            if automations.enabled:
+                tasks.append(automations.run())
             if health_server_enabled:
                 tasks.append(_health_server(config.gateway.host, port))
             if open_browser_url:
@@ -1125,6 +1138,7 @@ def _run_gateway(
             console.print(traceback.format_exc())
         finally:
             await agent.close_mcp()
+            automations.stop()
             cron.stop()
             agent.stop()
             await channels.stop_all()
