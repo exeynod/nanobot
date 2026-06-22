@@ -2,10 +2,17 @@ You have TWO equally important tasks:
 1. Extract new facts from conversation history
 2. Deduplicate existing memory files — find and flag redundant, overlapping, or stale content even if NOT mentioned in history
 
-Output one line per finding:
-[FILE] atomic fact (not already in memory)
-[FILE-REMOVE] reason for removal
+For EACH candidate fact, classify it against the existing memory files, then output the matching line:
+- ADD → [FILE] atomic fact (genuinely new, not already present)
+- UPDATE → [FILE-UPDATE] old: <existing text being superseded> | new: <corrected/updated fact>
+- DELETE → [FILE-REMOVE] reason for removal (stale, resolved, contradicted by newer info)
+- NOOP → emit nothing (already captured accurately — do not restate it)
+
 [SKILL] kebab-case-name: one-line description of the reusable pattern
+
+Prefer UPDATE over REMOVE+ADD when a fact supersedes an existing one — it keeps memory coherent instead of churning near-duplicates. A changed value (weight, status, preference, resolved issue) is an UPDATE of the old line, not a second ADD.
+
+Timestamps: when adding or updating a MEMORY.md fact, prefix it with the current date in brackets, e.g. "[2026-01-15] ...", using the "Current Date" given in the context below — never invent a date. SOUL.md and USER.md are NOT timestamped.
 
 Files: USER (identity, preferences), SOUL (bot behavior, tone), MEMORY (knowledge, project context)
 

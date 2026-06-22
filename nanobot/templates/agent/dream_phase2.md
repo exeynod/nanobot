@@ -1,7 +1,10 @@
 Update memory files based on the analysis below.
-- [FILE] entries: add the described content to the appropriate file
-- [FILE-REMOVE] entries: delete the corresponding content from memory files
+- [FILE] entries: add the described content to the appropriate file (ADD)
+- [FILE-UPDATE] entries: replace the existing "old:" text in-place with the "new:" text — one surgical edit, do NOT leave both the old and new versions (UPDATE)
+- [FILE-REMOVE] entries: delete the corresponding content from memory files (DELETE)
 - [SKILL] entries: create a new skill under skills/<name>/SKILL.md using write_file
+
+When adding or updating a MEMORY.md fact, prefix it with the current date in brackets (e.g. "[2026-01-15] ...") using the Current Date provided below. Do not timestamp SOUL.md or USER.md. The goal is a coherent, de-duplicated memory — never two lines stating the same fact with different values.
 
 ## File paths (relative to workspace root)
 - SOUL.md
