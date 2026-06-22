@@ -1037,9 +1037,7 @@ describe("ThreadShell", () => {
 
   it("scrolls to the bottom after loading a session from the blank new-chat page", async () => {
     const client = makeClient();
-    const scrollIntoView = vi.fn();
-    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
-    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    const scrollTo = vi.fn();
     vi.stubGlobal(
       "fetch",
       vi.fn(async (input: RequestInfo | URL) => {
@@ -1060,46 +1058,49 @@ describe("ThreadShell", () => {
       }),
     );
 
-    try {
-      const { rerender } = render(
+    const { container, rerender } = render(
+      wrap(
+        client,
+        <ThreadShell
+          session={null}
+          title="nanobot"
+          onToggleSidebar={() => {}}
+          onNewChat={() => {}}
+        />,
+      ),
+    );
+
+    expect(screen.getByText(HERO_GREETING_PATTERN)).toBeInTheDocument();
+    const scroller = container.querySelector(".thread-viewport-scrollbar") as HTMLElement;
+    Object.defineProperties(scroller, {
+      scrollHeight: { configurable: true, value: 2400 },
+      clientHeight: { configurable: true, value: 600 },
+      scrollTop: { configurable: true, writable: true, value: 0 },
+      scrollTo: { configurable: true, value: scrollTo },
+    });
+    scrollTo.mockClear();
+
+    await act(async () => {
+      rerender(
         wrap(
           client,
           <ThreadShell
-            session={null}
-            title="nanobot"
+            session={session("chat-a")}
+            title="Chat chat-a"
             onToggleSidebar={() => {}}
             onNewChat={() => {}}
           />,
         ),
       );
+    });
 
-      expect(screen.getByText(HERO_GREETING_PATTERN)).toBeInTheDocument();
-      scrollIntoView.mockClear();
-
-      await act(async () => {
-        rerender(
-          wrap(
-            client,
-            <ThreadShell
-              session={session("chat-a")}
-              title="Chat chat-a"
-              onToggleSidebar={() => {}}
-              onNewChat={() => {}}
-            />,
-          ),
-        );
-      });
-
-      await waitFor(() => expect(screen.getByText("loaded answer")).toBeInTheDocument());
-      await waitFor(() =>
-        expect(scrollIntoView).toHaveBeenCalledWith({
-          block: "end",
-          behavior: "auto",
-        }),
-      );
-    } finally {
-      HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
-    }
+    await waitFor(() => expect(screen.getByText("loaded answer")).toBeInTheDocument());
+    await waitFor(() =>
+      expect(scrollTo).toHaveBeenCalledWith({
+        top: 1800,
+        behavior: "auto",
+      }),
+    );
   });
 
   it("opens slash commands on the blank welcome page", async () => {
