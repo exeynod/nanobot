@@ -88,6 +88,7 @@ When removing: prefer deleting individual items over entire sections.
 - Corrections: edit the existing entry, don't append a new one
 - Conflicts: if new information contradicts an existing entry, replace the old entry in place; do not keep both versions
 - Capture confirmed approaches the user validated
+- Timestamps: prefix new or updated MEMORY.md facts with the current date in brackets (e.g. `[2026-01-15] ...`) using the Current Date provided in context — never invent a date. Do NOT timestamp SOUL.md or USER.md.
 
 ## Skill discovery & creation
 Flag [SKILL] only when ALL are true: repeatable workflow appeared 2+ times, involves clear steps (not vague preferences), substantial enough for its own instruction set. Check existing skills to avoid redundancy.
