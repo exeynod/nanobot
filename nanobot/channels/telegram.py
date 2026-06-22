@@ -349,6 +349,7 @@ class TelegramConfig(Base):
     connection_pool_size: int = 32
     pool_timeout: float = 5.0
     streaming: bool = True
+    rich_send: bool = True  # Use Bot API 10.1 sendRichMessage (native markdown). Set False to force legacy HTML so bold/headers render at normal size.
     # Enable inline keyboard buttons in Telegram messages.
     inline_keyboards: bool = False
     stream_edit_interval: float = Field(default=_STREAM_EDIT_INTERVAL_DEFAULT, ge=0.1)
@@ -443,7 +444,7 @@ class TelegramChannel(BaseChannel):
         self._stream_bufs: dict[str, _StreamBuf] = {}  # chat_id -> streaming state
         self._inbound_buffers: dict[str, list[_QueuedTelegramUpdate]] = {}
         self._inbound_workers: dict[str, asyncio.Task] = {}
-        self._rich_send_disabled: bool = False  # Latch off if Bot API < 10.1
+        self._rich_send_disabled: bool = not self.config.rich_send  # config opt-out, or latch off if Bot API < 10.1
 
     def is_allowed(self, sender_id: str) -> bool:
         """Preserve Telegram's legacy id|username allowlist matching."""
