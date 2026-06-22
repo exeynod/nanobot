@@ -61,7 +61,7 @@ class OpenAICodexProvider(LLMProvider):
             "stream": True,
             "instructions": system_prompt,
             "input": input_items,
-            "text": {"verbosity": "medium"},
+            "text": {"verbosity": self.generation.verbosity or "medium"},
             "include": ["reasoning.encrypted_content"],
             "prompt_cache_key": _prompt_cache_key(messages[:2]),
             "tool_choice": tool_choice or "auto",
